@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 mongoose.connect(
-  process.env.MONGODB_URI || 'mongodb://localhost:27017/openSource-bookFinder',
+  process.env.MONGODB_URI || 'mongodb://localhost/openSource-bookFinder',
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
