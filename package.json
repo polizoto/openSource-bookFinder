@@ -1,0 +1,25 @@
+{
+  "name": "opensource-bookfinder",
+  "version": "1.0.0",
+  "description": "An MERN stack open-source bookFinder using Google Books API",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "build": "cd client && npm run build",
+    "develop": "concurrently \"cd server && npm run watch\" \"cd client && npm start\"",
+    "install": "cd server && npm i && cd ../client && npm i",
+    "seed": "cd server && npm run seed",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polizoto/opensource-bookfinder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "homepage": "https://github.com/polizoto/opensource-bookfinder#readme",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^7.1.0"
+  }
+}
