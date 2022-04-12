@@ -2,6 +2,8 @@ import React from 'react';
 import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import SearchBooks from './pages/SearchBooks';
+// import { useQuery } from '@apollo/client';
+// import { QUERY_ME } from './utils/queries';
 import SavedBooks from './pages/SavedBooks';
 import Navbar from './components/Navbar';
 import { setContext } from '@apollo/client/link/context';
@@ -25,7 +27,14 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
+
+
 function App() {
+  // const { loading, data } = useQuery(QUERY_ME);
+  
+  // const userData = data?.me || [];
+  // const { loading, data } = useQuery(QUERY_ME);
+  // const userData = data?.me || [];
   return (
     <ApolloProvider client={client}>
     <Router>

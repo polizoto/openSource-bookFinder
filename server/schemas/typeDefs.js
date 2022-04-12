@@ -32,7 +32,7 @@ type User {
     login(email: String!, password: String!): Auth
     addUser(username: String!, email: String!, password: String!): Auth
     saveBook(authors: [String], description: String!, title: String!, bookId: String!, image: String): User
-    deleteBook(bookId: ID!): User
+    deleteBook(bookId: String!): User
   }
 `;
 

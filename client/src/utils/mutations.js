@@ -49,7 +49,6 @@ mutation deleteBook($bookId: String!) {
     deleteBook(bookId: $bookId) {
       _id
       username
-      savedBooks
     }
   }
 `;

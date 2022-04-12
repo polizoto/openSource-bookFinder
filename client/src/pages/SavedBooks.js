@@ -1,19 +1,40 @@
 import React from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
-import { useMutation, useQuery } from '@apollo/client';
-import { QUERY_ME } from "../utils/queries";
+import { useQuery, useMutation } from '@apollo/client';
+import { QUERY_ME } from '../utils/queries';
 import { DELETE_BOOK } from '../utils/mutations';
 import Auth from '../utils/auth';
-import { removeBookId } from '../utils/localStorage';
+import { removeMyBookInfo, removeBookId } from '../utils/localStorage';
 
-const SavedBooks = () => {
+const SavedBooks =  () => {
 
-  const { loading, data } = useQuery(QUERY_ME);
-  const [deleteBook] = useMutation(DELETE_BOOK);
+    const { loading, data } = useQuery(QUERY_ME);
 
-  const userData = data?.me || [];
+    const userData = data?.me || [];
 
-  const handleDeleteBook = async (bookId) => {
+    const refreshPage = ()=>{
+      window.location.reload();
+   }
+
+    const [deletedBook] = useMutation(DELETE_BOOK, {
+      update(cache, {data: {deletedBook}}) {
+        try {
+          // could potentially not exist yet, so wrap in a try...catch
+          const { me } = cache.readQuery({ query: QUERY_ME });
+          console.log(me)
+          console.log(deletedBook)
+          cache.writeQuery({
+            query: QUERY_ME,
+            data: { me: { ...me, SavedBooks: [...me.savedBooks.filter(currentBook => currentBook.BookId !== deletedBook )]} }
+          });
+          console.log(me)
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      });
+
+    const handleDeleteBook = async (removedBook) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
     if (!token) {
@@ -21,17 +42,22 @@ const SavedBooks = () => {
     }
 
     try {
-      await deleteBook({
-        variables: { bookId },
+      await deletedBook({
+        variables: { bookId: removedBook },
+
       });
-      removeBookId(bookId);
+
+      removeBookId(removedBook);
+      removeMyBookInfo(removedBook);
+      // window.location.reload();
     } catch (err) {
       console.error(err);
     }
-  };
+    refreshPage()
 
-  // if data isn't here yet, say so
-  if (!loading) {
+  }
+
+  if (loading) {
     return <h2>LOADING...</h2>;
   }
 
@@ -43,13 +69,13 @@ const SavedBooks = () => {
         </Container>
       </Jumbotron>
       <Container>
-        <h2>
+      <h2>
           {userData.savedBooks.length
             ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <CardColumns>
-          {userData.savedBooks.map((book) => {
+        {userData.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border='dark'>
                 {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}

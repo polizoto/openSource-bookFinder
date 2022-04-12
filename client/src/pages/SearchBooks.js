@@ -1,29 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, Col, Form, Button, Card, CardColumns } from 'react-bootstrap';
 import { SAVE_BOOK } from "../utils/mutations";
-import { useMutation } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import { QUERY_ME } from '../utils/queries';
 import Auth from '../utils/auth';
 import { searchGoogleBooks } from '../utils/API';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
 const SearchBooks = () => {
 
-  const [saveBook] = useMutation(SAVE_BOOK);
-  // create state for holding returned google api data
-  const [searchedBooks, setSearchedBooks] = useState([]);
-  // create state for holding our search field data
-  const [searchInput, setSearchInput] = useState('');
+ useQuery(QUERY_ME)
 
-  // create state to hold saved bookId values
-  const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
-
-  // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
-  // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
-  useEffect(() => {
-    return () => saveBookIds(savedBookIds);
+  const [saveBook] = useMutation(SAVE_BOOK, {
+    update(cache, {data: {saveBook}} ) {
+    try {
+      // could potentially not exist yet, so wrap in a try...catch
+      const { me } = cache.readQuery({ query: QUERY_ME});
+      cache.writeQuery({
+        query: QUERY_ME,
+        data: { me: {...me, savedBooks: [...me.savedBooks, saveBook] } }
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
   });
 
-  // create method to search for books and set state on form submit
+  const [searchedBooks, setSearchedBooks] = useState([]);
+
+  const [searchInput, setSearchInput] = useState('');
+
+  const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
+
+  useEffect(() => {
+    saveBookIds(savedBookIds)
+  });
+
+  // useEffect(() => {
+  //   return () => saveBookIds(savedBookIds)
+  // });
+
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
@@ -55,24 +71,23 @@ const SearchBooks = () => {
     }
   };
 
-  // create function to handle saving a book to our database
   const handleSaveBook = async (bookId) => {
-    // find the book in `searchedBooks` state by the matching id
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
-    // get token
+    console.log(bookToSave)
     const token = Auth.loggedIn() ? Auth.getToken() : null;
-
+    // console.log(bookToSave)
     if (!token) {
       return false;
     }
-    console.log(bookToSave)
     try {
-      const bookSaved = await saveBook({
+      await saveBook({
         variables: { ...bookToSave },
       });
+      // await saveBook({
+      //   variables: { ...bookToSave },
+      // });
 
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-      console.log(bookSaved)
     } catch (err) {
 
       console.error(err);

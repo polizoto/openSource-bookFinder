@@ -4,15 +4,19 @@ const { signToken } = require('../utils/auth');
 
 const resolvers = {
   Query: {
-    me: async (parent, args, context) => {
+    me: async (_p, _a, context) => {
         if (context.user) {
-          return User.findOne({ _id: context.user._id })
-          .populate('book')
-        }
-      
+            const user = await User.findOne({ _id: context.user._id })
+
+            console.log(user);
+            if (user) return user;
+
+            console.log("!!! USER DOES NOT EXIST");
+            return {};
+         }
         throw new AuthenticationError('Not logged in');
-      }
-  },
+    },
+},
 
   Mutation: {
     addUser: async (parent, args) => {
@@ -54,12 +58,12 @@ const resolvers = {
       throw new AuthenticationError('You need to be logged in!');
   },
 
-    deleteBook: async (parent, { bookId }, context) => {
+    deleteBook: async (_p, { bookId }, context) => {
       if (context.user) {
-        return User.findOneAndUpdate(
+        return await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: context.bookId } },
-          { new: true }
+          { $pull: { savedBooks: { bookId: bookId}  } },
+          { new: true, runValidators: true }
         );
       }
       throw new AuthenticationError("You need to log in");
