@@ -1,18 +1,15 @@
 const { AuthenticationError } = require('apollo-server-express');
-const { User, Book } = require('../models');
+const { User } = require('../models');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
   Query: {
-    me: async (_p, _a, context) => {
+    me: async (parent, args, context) => {
         if (context.user) {
-            const user = await User.findOne({ _id: context.user._id })
-
-            console.log(user);
-            if (user) return user;
-
-            console.log("!!! USER DOES NOT EXIST");
-            return {};
+            const userData = await User.findOne({ _id: context.user._id }).select(
+              '-__v -password'
+            );
+              return userData
          }
         throw new AuthenticationError('Not logged in');
     },
@@ -20,10 +17,8 @@ const resolvers = {
 
   Mutation: {
     addUser: async (parent, args) => {
-      // const user = await User.create(args);
       const user = await User.create(args);
       const token = signToken(user);
-
       return { token, user };
     
     },
@@ -44,27 +39,27 @@ const resolvers = {
         return { token, user };
     },
 
-    saveBook: async (_p, args, context) => {
+    saveBook: async (parent, { newBook} , context) => {
       if (context.user) {
-        const updatedUser = await User.findOneAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
           { _id: context.user._id },
-          { $addToSet: { savedBooks: args } },
+          { $addToSet: { savedBooks: newBook } },
           { new: true, runValidators: true }
         );
-        console.log(updatedUser);
         return updatedUser;
       }
 
       throw new AuthenticationError('You need to be logged in!');
   },
 
-    deleteBook: async (_p, { bookId }, context) => {
+    deleteBook: async (parent, { bookId }, context) => {
       if (context.user) {
-        return await User.findOneAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: { bookId: bookId}  } },
-          { new: true, runValidators: true }
+          { $pull: { savedBooks: { bookId } } },
+          { new: true }
         );
+        return updatedUser;
       }
       throw new AuthenticationError("You need to log in");
     },

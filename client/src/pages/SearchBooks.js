@@ -1,30 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, Col, Form, Button, Card, CardColumns } from 'react-bootstrap';
 import { SAVE_BOOK } from "../utils/mutations";
-import { useQuery, useMutation } from "@apollo/client";
-import { QUERY_ME } from '../utils/queries';
+import { useMutation } from "@apollo/client";
 import Auth from '../utils/auth';
 import { searchGoogleBooks } from '../utils/API';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
 const SearchBooks = () => {
 
- useQuery(QUERY_ME)
-
-  const [saveBook] = useMutation(SAVE_BOOK, {
-    update(cache, {data: {saveBook}} ) {
-    try {
-      // could potentially not exist yet, so wrap in a try...catch
-      const { me } = cache.readQuery({ query: QUERY_ME});
-      cache.writeQuery({
-        query: QUERY_ME,
-        data: { me: {...me, savedBooks: [...me.savedBooks, saveBook] } }
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  });
+  const [saveBook] = useMutation(SAVE_BOOK);
 
   const [searchedBooks, setSearchedBooks] = useState([]);
 
@@ -73,19 +57,18 @@ const SearchBooks = () => {
 
   const handleSaveBook = async (bookId) => {
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
-    console.log(bookToSave)
     const token = Auth.loggedIn() ? Auth.getToken() : null;
     // console.log(bookToSave)
     if (!token) {
       return false;
     }
+    const decodedToken = Auth.getProfile(token).data._id;
+ 
     try {
-      await saveBook({
-        variables: { ...bookToSave },
+       await saveBook({
+        variables: { newBook: {...bookToSave } },
+        _id: decodedToken
       });
-      // await saveBook({
-      //   variables: { ...bookToSave },
-      // });
 
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (err) {

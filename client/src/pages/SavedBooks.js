@@ -4,35 +4,19 @@ import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_ME } from '../utils/queries';
 import { DELETE_BOOK } from '../utils/mutations';
 import Auth from '../utils/auth';
-import { removeMyBookInfo, removeBookId } from '../utils/localStorage';
+import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks =  () => {
 
     const { loading, data } = useQuery(QUERY_ME);
 
-    const userData = data?.me || [];
+    const userData = data?.me || {};
 
-    const refreshPage = ()=>{
-      window.location.reload();
-   }
+  //   const refreshPage = ()=>{
+  //     window.location.reload();
+  //  }
 
-    const [deletedBook] = useMutation(DELETE_BOOK, {
-      update(cache, {data: {deletedBook}}) {
-        try {
-          // could potentially not exist yet, so wrap in a try...catch
-          const { me } = cache.readQuery({ query: QUERY_ME });
-          console.log(me)
-          console.log(deletedBook)
-          cache.writeQuery({
-            query: QUERY_ME,
-            data: { me: { ...me, SavedBooks: [...me.savedBooks.filter(currentBook => currentBook.BookId !== deletedBook )]} }
-          });
-          console.log(me)
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      });
+    const [deletedBook] = useMutation(DELETE_BOOK);
 
     const handleDeleteBook = async (removedBook) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
@@ -40,20 +24,18 @@ const SavedBooks =  () => {
     if (!token) {
       return false;
     }
-
+    const decodedToken = Auth.getProfile(token).data._id;
     try {
       await deletedBook({
         variables: { bookId: removedBook },
-
+        _id: decodedToken
       });
-
       removeBookId(removedBook);
-      removeMyBookInfo(removedBook);
       // window.location.reload();
     } catch (err) {
       console.error(err);
     }
-    refreshPage()
+    // refreshPage()
 
   }
 

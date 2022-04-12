@@ -24,17 +24,26 @@ const authLink = setContext((_, { headers }) => {
 
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        Part: {
+          parts: {
+            fields: {
+              merge(existing, incoming) {
+                return incoming;
+              }
+            }
+          }
+        }
+      }
+    }
+  })
 });
 
 
 
 function App() {
-  // const { loading, data } = useQuery(QUERY_ME);
-  
-  // const userData = data?.me || [];
-  // const { loading, data } = useQuery(QUERY_ME);
-  // const userData = data?.me || [];
   return (
     <ApolloProvider client={client}>
     <Router>
