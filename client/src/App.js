@@ -2,8 +2,6 @@ import React from 'react';
 import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import SearchBooks from './pages/SearchBooks';
-// import { useQuery } from '@apollo/client';
-// import { QUERY_ME } from './utils/queries';
 import SavedBooks from './pages/SavedBooks';
 import Navbar from './components/Navbar';
 import { setContext } from '@apollo/client/link/context';
