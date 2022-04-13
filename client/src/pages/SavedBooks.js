@@ -68,7 +68,7 @@ const SavedBooks =  () => {
                   <Button className='btn-block btn-danger' onClick={() => handleDeleteBook(book.bookId)}>
                     Delete this Book!
                   </Button>
-                  <Card.Link aria-label={book.title} rel="noreferrer" target="_blank" href={book.link}>Read More</Card.Link>
+                  <Card.Link rel="noreferrer" target="_blank" href={book.link}>{book.title} - More Info</Card.Link>
                 </Card.Body>
               </Card>
             );
