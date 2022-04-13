@@ -20,10 +20,6 @@ const SearchBooks = () => {
     saveBookIds(savedBookIds)
   });
 
-  // useEffect(() => {
-  //   return () => saveBookIds(savedBookIds)
-  // });
-
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
@@ -40,11 +36,14 @@ const SearchBooks = () => {
 
       const { items } = await response.json();
 
+      console.log(items)
+
       const bookInfo = items.map((book) => ({
         bookId: book.id,
         authors: book.volumeInfo.authors || ['No author to display'],
         title: book.volumeInfo.title,
         description: book.volumeInfo.description,
+        link: book.volumeInfo.infoLink,
         image: book.volumeInfo.imageLinks?.thumbnail || '',
       }));
 
@@ -131,6 +130,7 @@ const SearchBooks = () => {
                         : 'Save this Book!'}
                     </Button>
                   )}
+                  <Card.Link aria-label={book.title} rel="noreferrer" target="_blank" href={book.link}>Read More</Card.Link>
                 </Card.Body>
               </Card>
             );
